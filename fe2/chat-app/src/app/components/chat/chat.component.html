@@ -1,11 +1,12 @@
-<mat-card>
-    <h2>Chat Room</h2>
-    <div *ngFor="let message of messages">
-      <p>{{ message.sender }}: {{ message.content }}</p>
-    </div>
-    <mat-form-field>
-      <input matInput placeholder="Type a message..." [(ngModel)]="newMessage">
-    </mat-form-field>
-    <button mat-raised-button color="primary" (click)="sendMessage()">Send</button>
-</mat-card>
-  
+chat component
+<amplify-authenticator>
+  <ng-template
+    amplifySlot="authenticated"
+    let-user="user"
+    let-signOut="signOut"
+  >
+    <h1>Welcome {{ user.username }}!</h1>
+    <button (click)="signOut()">Sign Out</button>
+    <button (click)="testButton()">Test button</button>
+  </ng-template>
+</amplify-authenticator>
