@@ -9,15 +9,17 @@ import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-chat',
-  templateUrl: './chat.component.html'
+  templateUrl: './chat.component.html',
+  styleUrls: [ './chat.component.css' ]
   //standalone: true,
-  ///imports: [MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule]
 })
 export class ChatComponent implements OnInit {
   messages: any[] = [];
   newMessage: string = '';
+  selectedUser: any = null; // Store the currently selected user
+  currentUser: any; // Store the currently logged-in user
 
-  constructor(private chatService: ChatService, private authService: AuthService) {}
+  constructor(private authService: AuthService) {}
 
   async ngOnInit() {
     
@@ -50,12 +52,10 @@ export class ChatComponent implements OnInit {
       console.error('Error fetching tokens:', error);
     }
   }
+  onUserSelected(user: any) {
+    // Handle user selection from the users-list component
+    console.log('selected user ' + user.username)
+    this.selectedUser = user;
+  }
 
-  // sendMessage() {
-  //   this.chatService.sendMessage(this.newMessage)
-  //     .subscribe(() => {
-  //       this.loadMessages();
-  //       this.newMessage = '';
-  //     });
-  // }
 }
