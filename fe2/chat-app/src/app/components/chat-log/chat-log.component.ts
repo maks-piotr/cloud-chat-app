@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 
 @Component({
@@ -6,7 +6,7 @@ import { ChatService } from '../../services/chat.service';
   templateUrl: './chat-log.component.html',
   styleUrls: ['./chat-log.component.css'],
 })
-export class ChatLogComponent implements OnInit {
+export class ChatLogComponent implements OnInit, OnChanges {
   @Input() loggedInUser!: string;
   @Input() selectedUser!: any;
 
@@ -19,10 +19,21 @@ export class ChatLogComponent implements OnInit {
     this.fetchChatLog();
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    console.log(this.selectedUser?.username + ' from ' + this.loggedInUser)
+    if (changes['selectedUser'] && changes['selectedUser'].currentValue) {
+      this.fetchChatLog(); // Refetch chat log when selectedUser changes
+    }
+  }
+
   fetchChatLog() {
-    this.chatService.getChatLog().subscribe((data) => {
-      this.messages = data;
-    });
+    if (this.loggedInUser && this.selectedUser?.username) {
+      this.chatService
+        .getChatLog(this.loggedInUser, this.selectedUser.username)
+        .subscribe((data) => {
+          this.messages = data;
+        });
+    }
   }
 
   sendMessage() {

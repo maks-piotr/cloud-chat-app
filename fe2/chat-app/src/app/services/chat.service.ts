@@ -14,8 +14,8 @@ export class ChatService {
     return this.http.get(`${this.baseUrl}/users`);
   }
 
-  getChatLog(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/chatlog`);
+  getChatLog(loggedInUser: string, selectedUser: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/chatlog`, { loggedInUser, selectedUser });
   }
 
   sendMessage(from: string, to: string, message: string): Observable<any> {
