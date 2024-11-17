@@ -1,8 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const jwt = require('jsonwebtoken'); // For decoding tokens
-const jwkToPem = require('jwk-to-pem'); // Converts JWKs to PEM for verification
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args)); // To fetch Cognito JWKs
+const jwt = require('jsonwebtoken');
+const jwkToPem = require('jwk-to-pem');
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const mysql = require('mysql2/promise'); // MySQL client library
 
 const app = express();
 
@@ -25,6 +26,17 @@ let cognitoKeys = {};
     return agg;
   }, {});
 })();
+
+// MySQL Database connection pool
+const db = mysql.createPool({
+  host: 'terraform-20241117163806748300000001.cqfmxw48grex.us-east-1.rds.amazonaws.com', // Replace with your RDS endpoint
+  user: 'master', // Replace with your database username
+  password: 'securepassword', // Replace with your database password
+  database: 'chat_app_db', // Replace with your database name
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
 
 // Middleware to validate access token and match user claims
 async function authenticateCognitoToken(req, res, next) {
@@ -65,50 +77,51 @@ function verifyUserMatch(req, res, next) {
   next();
 }
 
-// Dummy data
-let users = [
-  { id: 1, username: 'Alice' },
-  { id: 2, username: 'Bob' },
-];
-
-let chatLogs = [
-  { from: 'Alice', to: 'Bob', message: 'Hi Bob!' },
-  { from: 'Bob', to: 'Alice', message: 'Hey Alice!' },
-  { from: 'Alice', to: 'Charlie', message: 'Hi Charlie!' },
-  { from: 'test2', to: 'Alice', message: 'Hi Alice, I\'m test2!' },
-  { from: 'Alice', to: 'test2', message: 'Hi test2, I\'m Alice :)!' }
-];
-
 // Get users
-app.get('/users', (req, res) => {
-  res.json(users);
+app.get('/users', async (req, res) => {
+  try {
+    const [users] = await db.query('SELECT id, username FROM users');
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Get chat log between two users
-app.post('/chatlog', authenticateCognitoToken, verifyUserMatch, (req, res) => {
+app.post('/chatlog', authenticateCognitoToken, verifyUserMatch, async (req, res) => {
   const { loggedInUser, selectedUser } = req.body;
   if (!loggedInUser || !selectedUser) {
     return res.status(400).json({ error: 'Missing loggedInUser or selectedUser' });
   }
 
-  // Filter messages where loggedInUser is involved
-  const filteredChatLogs = chatLogs.filter(
-    (chat) =>
-      (chat.from === loggedInUser && chat.to === selectedUser) ||
-      (chat.from === selectedUser && chat.to === loggedInUser)
-  );
-
-  res.json(filteredChatLogs);
+  try {
+    const [chatLogs] = await db.query(
+      'SELECT * FROM chat_logs WHERE (from_user = ? AND to_user = ?) OR (from_user = ? AND to_user = ?)',
+      [loggedInUser, selectedUser, selectedUser, loggedInUser]
+    );
+    res.json(chatLogs);
+  } catch (error) {
+    console.error('Error fetching chat logs:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Send a new chat message
-app.post('/chat', authenticateCognitoToken, verifyUserMatch, (req, res) => {
+app.post('/chat', authenticateCognitoToken, verifyUserMatch, async (req, res) => {
   const { from, to, message } = req.body;
   if (!from || !to || !message) {
     return res.status(400).json({ error: 'Invalid data' });
   }
-  chatLogs.push({ from, to, message });
-  res.status(201).json({ success: true });
+
+  try {
+    await db.query('INSERT INTO chat_logs (from_user, to_user, message) VALUES (?, ?, ?)', [from, to, message]);
+    res.status(201).json({ success: true });
+  } catch (error) {
+    console.error('Error saving chat message:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-app.listen(8080, () => console.log('Dummy server running on http://localhost:8080'));
+app.listen(8080, () => console.log('Server running on http://localhost:8080'));
+ 
