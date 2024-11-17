@@ -20,7 +20,7 @@ export class ChatLogComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log(this.selectedUser?.username + ' from ' + this.loggedInUser)
+    console.log(this.selectedUser?.username + ' from ' + this.loggedInUser);
     if (changes['selectedUser'] && changes['selectedUser'].currentValue) {
       this.fetchChatLog(); // Refetch chat log when selectedUser changes
     }
@@ -28,22 +28,22 @@ export class ChatLogComponent implements OnInit, OnChanges {
 
   fetchChatLog() {
     if (this.loggedInUser && this.selectedUser?.username) {
-      this.chatService
-        .getChatLog(this.loggedInUser, this.selectedUser.username)
-        .subscribe((data) => {
+      this.chatService.getChatLog(this.loggedInUser, this.selectedUser.username).then((observable) => {
+        observable.subscribe((data) => {
           this.messages = data;
         });
+      });
     }
   }
 
   sendMessage() {
     if (this.newMessage.trim() && this.selectedUser) {
-      this.chatService
-        .sendMessage(this.loggedInUser, this.selectedUser.username, this.newMessage)
-        .subscribe(() => {
+      this.chatService.sendMessage(this.loggedInUser, this.selectedUser.username, this.newMessage).then((observable) => {
+        observable.subscribe(() => {
           this.fetchChatLog(); // Refresh chat log after sending
           this.newMessage = ''; // Clear the input field
         });
+      });
     }
   }
 }

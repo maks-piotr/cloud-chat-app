@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root',
@@ -8,17 +9,28 @@ import { Observable } from 'rxjs';
 export class ChatService {
   private baseUrl = 'http://localhost:8080';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
-  getUsers(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/users`);
+  private async getAuthHeaders(): Promise<HttpHeaders> {
+    const session = await this.authService.getCurrentSession();
+    const token = session?.accessToken;
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
   }
 
-  getChatLog(loggedInUser: string, selectedUser: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/chatlog`, { loggedInUser, selectedUser });
+  async getUsers(): Promise<Observable<any>> {
+    const headers = await this.getAuthHeaders();
+    return this.http.get(`${this.baseUrl}/users`, { headers });
   }
 
-  sendMessage(from: string, to: string, message: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/chat`, { from, to, message });
+  async getChatLog(loggedInUser: string, selectedUser: string): Promise<Observable<any>> {
+    const headers = await this.getAuthHeaders();
+    return this.http.post(`${this.baseUrl}/chatlog`, { loggedInUser, selectedUser }, { headers });
+  }
+
+  async sendMessage(from: string, to: string, message: string): Promise<Observable<any>> {
+    const headers = await this.getAuthHeaders();
+    return this.http.post(`${this.baseUrl}/chat`, { from, to, message }, { headers });
   }
 }

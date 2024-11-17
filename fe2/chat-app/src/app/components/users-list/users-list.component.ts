@@ -16,8 +16,10 @@ export class UsersListComponent implements OnInit {
   constructor(private chatService: ChatService) {}
 
   ngOnInit() {
-    this.chatService.getUsers().subscribe((data) => {
-      this.users = data;
+    this.chatService.getUsers().then((observable) => {
+      observable.subscribe((data) => {
+        this.users = data;
+      });
     });
   }
 
