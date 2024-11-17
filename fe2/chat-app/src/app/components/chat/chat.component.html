@@ -7,7 +7,9 @@
     <div class="container">
       <div class="users">
         <!-- Listen for the userSelected event -->
-        <app-users-list (userSelected)="onUserSelected($event)"></app-users-list>
+        <app-users-list (userSelected)="onUserSelected($event)" [loggedInUser]="user.username">
+          
+        </app-users-list>
       </div>
 
       <div class="chat">

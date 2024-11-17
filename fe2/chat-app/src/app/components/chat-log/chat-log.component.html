@@ -2,7 +2,7 @@
     <h3>Chat with {{ selectedUser?.username }}</h3>
     <div class="chat-log">
       <p *ngFor="let message of messages">
-        <strong>{{ message.from }}:</strong> {{ message.message }}
+        <strong>{{ message.from_user }}:</strong> {{ message.message }}
       </p>
     </div>
     <div>

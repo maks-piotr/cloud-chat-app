@@ -1,4 +1,4 @@
-import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 
 @Component({
@@ -7,6 +7,7 @@ import { ChatService } from '../../services/chat.service';
   styleUrls: ['./users-list.component.css'],
 })
 export class UsersListComponent implements OnInit {
+  @Input() loggedInUser!: string;
   users: any[] = [];
   selectedUser: any;
 
@@ -18,9 +19,10 @@ export class UsersListComponent implements OnInit {
   ngOnInit() {
     this.chatService.getUsers().then((observable) => {
       observable.subscribe((data) => {
-        this.users = data;
+        this.users = data.filter((user: { username: string; }) => user.username !== this.loggedInUser);
       });
     });
+
   }
 
   selectUser(user: any) {

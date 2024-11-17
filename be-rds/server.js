@@ -3,7 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const jwkToPem = require('jwk-to-pem');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-const mysql = require('mysql2/promise'); // MySQL client library
+const { Pool } = require('pg'); // PostgreSQL client library
 
 const app = express();
 
@@ -27,15 +27,16 @@ let cognitoKeys = {};
   }, {});
 })();
 
-// MySQL Database connection pool
-const db = mysql.createPool({
-  host: 'terraform-20241117163806748300000001.cqfmxw48grex.us-east-1.rds.amazonaws.com', // Replace with your RDS endpoint
+// PostgreSQL Database connection pool
+const pool = new Pool({
+  host: 'terraform-20241117210759533700000001.cqfmxw48grex.us-east-1.rds.amazonaws.com', // Replace with your RDS endpoint
   user: 'master', // Replace with your database username
   password: 'securepassword', // Replace with your database password
   database: 'chat_app_db', // Replace with your database name
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
+  port: 5432, // Default PostgreSQL port
+  max: 10, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // Connection idle timeout
+  connectionTimeoutMillis: 2000, // Connection timeout
 });
 
 // Middleware to validate access token and match user claims
@@ -80,8 +81,8 @@ function verifyUserMatch(req, res, next) {
 // Get users
 app.get('/users', async (req, res) => {
   try {
-    const [users] = await db.query('SELECT id, username FROM users');
-    res.json(users);
+    const result = await pool.query('SELECT id, username FROM users');
+    res.json(result.rows);
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -96,11 +97,11 @@ app.post('/chatlog', authenticateCognitoToken, verifyUserMatch, async (req, res)
   }
 
   try {
-    const [chatLogs] = await db.query(
-      'SELECT * FROM chat_logs WHERE (from_user = ? AND to_user = ?) OR (from_user = ? AND to_user = ?)',
-      [loggedInUser, selectedUser, selectedUser, loggedInUser]
+    const result = await pool.query(
+      'SELECT * FROM chat_logs WHERE (from_user = $1 AND to_user = $2) OR (from_user = $2 AND to_user = $1)',
+      [loggedInUser, selectedUser]
     );
-    res.json(chatLogs);
+    res.json(result.rows);
   } catch (error) {
     console.error('Error fetching chat logs:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -115,7 +116,7 @@ app.post('/chat', authenticateCognitoToken, verifyUserMatch, async (req, res) =>
   }
 
   try {
-    await db.query('INSERT INTO chat_logs (from_user, to_user, message) VALUES (?, ?, ?)', [from, to, message]);
+    await pool.query('INSERT INTO chat_logs (from_user, to_user, message) VALUES ($1, $2, $3)', [from, to, message]);
     res.status(201).json({ success: true });
   } catch (error) {
     console.error('Error saving chat message:', error);
@@ -124,4 +125,3 @@ app.post('/chat', authenticateCognitoToken, verifyUserMatch, async (req, res) =>
 });
 
 app.listen(8080, () => console.log('Server running on http://localhost:8080'));
- 
