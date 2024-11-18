@@ -1,0 +1,12 @@
+{
+    "COGNITO_REGION": "us-east-1",
+    "COGNITO_USER_POOL_ID": "us-east-1_uqVYJ45ln",
+    "DATABASE": {
+      "HOST": "terraform-20241117210759533700000001.cqfmxw48grex.us-east-1.rds.amazonaws.com",
+      "USER": "master",
+      "PASSWORD": "securepassword",
+      "NAME": "chat_app_db",
+      "PORT": 5432
+    }
+  }
+  

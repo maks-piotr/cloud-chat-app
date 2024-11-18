@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const jwkToPem = require('jwk-to-pem');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const { Pool } = require('pg'); // PostgreSQL client library
+const config = require('./config.json'); // Load configuration
 
 const app = express();
 
@@ -11,8 +12,7 @@ app.use(cors());
 app.use(express.json());
 
 // Replace with your Cognito User Pool details
-const COGNITO_REGION = 'us-east-1'; // Replace with your region
-const COGNITO_USER_POOL_ID = 'us-east-1_uqVYJ45ln'; // Replace with your user pool ID
+const { COGNITO_REGION, COGNITO_USER_POOL_ID, DATABASE } = config;
 const JWKS_URL = `https://cognito-idp.${COGNITO_REGION}.amazonaws.com/${COGNITO_USER_POOL_ID}/.well-known/jwks.json`;
 
 let cognitoKeys = {};
@@ -29,14 +29,14 @@ let cognitoKeys = {};
 
 // PostgreSQL Database connection pool
 const pool = new Pool({
-  host: 'terraform-20241117210759533700000001.cqfmxw48grex.us-east-1.rds.amazonaws.com', // Replace with your RDS endpoint
-  user: 'master', // Replace with your database username
-  password: 'securepassword', // Replace with your database password
-  database: 'chat_app_db', // Replace with your database name
-  port: 5432, // Default PostgreSQL port
-  max: 10, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Connection idle timeout
-  connectionTimeoutMillis: 2000, // Connection timeout
+  host: DATABASE.HOST,
+  user: DATABASE.USER,
+  password: DATABASE.PASSWORD,
+  database: DATABASE.NAME,
+  port: DATABASE.PORT,
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
 });
 
 // Middleware to validate access token and match user claims
