@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AuthUser, getCurrentUser, signOut, fetchAuthSession, AuthTokens } from 'aws-amplify/auth';
 import { Amplify } from 'aws-amplify';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -11,13 +12,12 @@ export class AuthService {
     Amplify.configure({
       Auth: {
         Cognito: {
-          userPoolId: 'us-east-1_uqVYJ45ln',
-          userPoolClientId: '7s8cbbjpdgdnv603nerg2nf5eg',
+          userPoolId: environment.cognito.userPoolId,
+          userPoolClientId: environment.cognito.userPoolClientId,
           signUpVerificationMethod: 'code',
               loginWith: {
-                username: true
+                username: environment.cognito.loginWithUsername
               }
-          
         }
       }
     });
