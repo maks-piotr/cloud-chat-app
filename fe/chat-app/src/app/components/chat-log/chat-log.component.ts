@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
 import { ChatService } from '../../services/chat.service';
 
 @Component({
@@ -6,23 +6,35 @@ import { ChatService } from '../../services/chat.service';
   templateUrl: './chat-log.component.html',
   styleUrls: ['./chat-log.component.css'],
 })
-export class ChatLogComponent implements OnInit, OnChanges {
+export class ChatLogComponent implements OnInit, OnChanges, OnDestroy {
   @Input() loggedInUser!: string;
   @Input() selectedUser!: any;
 
   messages: any[] = [];
   newMessage: string = '';
+  private refreshInterval: any; // Reference to the interval
 
   constructor(private chatService: ChatService) {}
 
   ngOnInit() {
     this.fetchChatLog();
+    // Set up auto-refresh every second
+    this.refreshInterval = setInterval(() => {
+      this.fetchChatLog();
+    }, 1000);
   }
 
   ngOnChanges(changes: SimpleChanges) {
     console.log(this.selectedUser?.username + ' from ' + this.loggedInUser);
     if (changes['selectedUser'] && changes['selectedUser'].currentValue) {
       this.fetchChatLog(); // Refetch chat log when selectedUser changes
+    }
+  }
+
+  ngOnDestroy() {
+    // Clear the interval when the component is destroyed
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
     }
   }
 
