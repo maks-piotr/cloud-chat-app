@@ -12,7 +12,7 @@ resource "aws_instance" "backend" {
               sudo systemctl start docker
               sudo systemctl enable docker
               sudo docker pull dockerowicz/chmury-backend:latest
-              sudo docker run -d -p 8080:8080 dockerowicz/chmury-backend:latest
+              sudo docker run -d -p 8080:8080 --restart always dockerowicz/chmury-backend:latest
             EOF
 
   tags = {

@@ -13,7 +13,7 @@ resource "aws_instance" "frontend" {
               sudo systemctl enable docker
               sudo docker pull dockerowicz/chmury-frontend:latest
               sudo docker run -d \
-                -p 80:80 \
+                -p 80:80 --restart always \
                 dockerowicz/chmury-frontend:latest
             EOF
 
