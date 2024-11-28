@@ -16,10 +16,6 @@ resource "aws_instance" "FRONTEND" {
               sudo docker pull dockerowicz/chmury-frontend:latest
               sudo docker run -d \
                 -p 80:80 \
-                -e API_BASE_URL=http://44.208.26.126:8080 \
-                -e USER_POOL_ID=us-east-1_uqVYJ45ln \
-                -e USER_POOL_CLIENT_ID=7s8cbbjpdgdnv603nerg2nf5eg \
-                -e LOGIN_WITH_USERNAME=true \
                 dockerowicz/chmury-frontend:latest
             EOF
   tags = {

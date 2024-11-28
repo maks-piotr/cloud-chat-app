@@ -2,6 +2,11 @@ provider "aws" {
   region = "us-east-1"
 }
 
+resource "aws_eip_association" "backend_eip_association" {
+  allocation_id = "eipalloc-07dd912e80a39a5b2"
+  instance_id   = aws_instance.BACKEND.id
+}
+
 resource "aws_instance" "BACKEND" {
   ami                    = "ami-0866a3c8686eaeeba"
   instance_type          = "t2.micro"
