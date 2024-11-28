@@ -40,18 +40,6 @@ export class ChatComponent implements OnInit {
     //this.chatService.getMessages().subscribe(data => this.messages = data);
   }
 
-  async testButton() {
-    try {
-      let user = await this.authService.getCurrentUser();
-      let session = await this.authService.getCurrentSession();
-      
-      console.log('Access Token: ' + session?.accessToken);
-      console.log('ID Token: ' + session?.idToken);
-      console.log('User', user?.signInDetails);
-    } catch (error) {
-      console.error('Error fetching tokens:', error);
-    }
-  }
   onUserSelected(user: any) {
     // Handle user selection from the users-list component
     console.log('selected user ' + user.username)

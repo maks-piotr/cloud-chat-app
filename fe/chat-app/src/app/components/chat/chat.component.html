@@ -4,12 +4,17 @@
     let-user="user"
     let-signOut="signOut"
   >
+    <div class="header">
+      <button class="signout-button" (click)="signOut()">Sign Out</button>
+    </div>
+
     <div class="container">
       <div class="users">
         <!-- Listen for the userSelected event -->
-        <app-users-list (userSelected)="onUserSelected($event)" [loggedInUser]="user.username">
-          
-        </app-users-list>
+        <app-users-list
+          (userSelected)="onUserSelected($event)"
+          [loggedInUser]="user.username"
+        ></app-users-list>
       </div>
 
       <div class="chat">
@@ -20,8 +25,5 @@
         ></app-chat-log>
       </div>
     </div>
-
-    <button (click)="signOut()">Sign Out</button>
-    <button (click)="testButton()">Test button</button>
   </ng-template>
 </amplify-authenticator>
